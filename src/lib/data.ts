@@ -38,12 +38,12 @@ async function uid() {
 /** Idempotent bootstrap: ensures profile + journey exist. start_date is set once, never overwritten. */
 export async function bootstrapUser(preferredLanguage: "ar" | "en") {
   const user = await uid();
-  const meta = user.user_metadata ?? {};
+  const meta = (user.user_metadata ?? {}) as Record<string, string | undefined>;
   await supabase.from("profiles").upsert(
     {
       user_id: user.id,
-      display_name: meta.full_name ?? meta.name ?? user.email ?? null,
-      avatar_url: meta.avatar_url ?? meta.picture ?? null,
+      display_name: meta["full_name"] ?? meta["name"] ?? user.email ?? null,
+      avatar_url: meta["avatar_url"] ?? meta["picture"] ?? null,
       preferred_language: preferredLanguage,
     },
     { onConflict: "user_id", ignoreDuplicates: true },

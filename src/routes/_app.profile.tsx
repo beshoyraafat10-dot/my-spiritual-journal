@@ -23,9 +23,9 @@ function ProfilePage() {
   if (pq.isLoading || jq.isLoading) return <Centered><Spinner /></Centered>;
   if (pq.error || jq.error) return <Centered><p>{t("errorGeneric")}</p></Centered>;
 
-  const meta = session?.user.user_metadata ?? {};
-  const name = pq.data?.display_name ?? meta.full_name ?? session?.user.email;
-  const avatar = pq.data?.avatar_url ?? meta.avatar_url;
+  const meta = (session?.user.user_metadata ?? {}) as Record<string, string | undefined>;
+  const name = pq.data?.display_name ?? meta["full_name"] ?? session?.user.email;
+  const avatar = pq.data?.avatar_url ?? meta["avatar_url"];
   const start = jq.data!.start_date;
 
   const changeLang = (l: Lang) => { setLang(l); void updateLanguage(l); };

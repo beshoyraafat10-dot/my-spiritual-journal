@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { getJourney, listEntrySummaries } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
-import { TOTAL_DAYS, currentDay, dateForDay, dayForDate, formatDate, formatNumber, rawDay, todayLocalISO } from "@/lib/journey";
+import { TOTAL_DAYS, currentDay, dateForDay, dayForDate, formatDate, formatNumber, parseISO, rawDay, todayLocalISO } from "@/lib/journey";
 import { Centered, Spinner } from "@/components/Shell";
 
 export const Route = createFileRoute("/_app/home")({
@@ -32,11 +32,11 @@ function Home() {
   const pct = Math.round((completed.size / TOTAL_DAYS) * 100);
 
   // Month navigation across the journey's real Gregorian months
-  const [sy, sm] = start.split("-").map(Number);
+  const [sy, sm] = parseISO(start);
   const end = dateForDay(start, TOTAL_DAYS);
-  const [ey, em] = end.split("-").map(Number);
+  const [ey, em] = parseISO(end);
   const totalMonths = (ey - sy) * 12 + (em - sm) + 1;
-  const [ty, tm] = today.split("-").map(Number);
+  const [ty, tm] = parseISO(today);
   const defaultOffset = Math.min(totalMonths - 1, Math.max(0, (ty - sy) * 12 + (tm - sm)));
   const off = monthOffset ?? defaultOffset;
   const mDate = new Date(Date.UTC(sy, sm - 1 + off, 1));

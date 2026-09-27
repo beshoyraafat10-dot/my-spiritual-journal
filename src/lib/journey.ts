@@ -8,8 +8,13 @@ export function todayLocalISO(d = new Date()): string {
   return `${y}-${m}-${day}`;
 }
 
+export function parseISO(iso: string): [number, number, number] {
+  const [y = 1970, m = 1, d = 1] = iso.split("-").map(Number);
+  return [y, m, d];
+}
+
 function toUTC(iso: string): number {
-  const [y, m, d] = iso.split("-").map(Number);
+  const [y, m, d] = parseISO(iso);
   return Date.UTC(y, m - 1, d);
 }
 
@@ -47,7 +52,7 @@ export function isDayUnlocked(startDate: string, day: number, today = todayLocal
 }
 
 export function formatDate(iso: string, lang: "ar" | "en", opts: Intl.DateTimeFormatOptions = { weekday: "long", day: "numeric", month: "long", year: "numeric" }) {
-  const [y, m, d] = iso.split("-").map(Number);
+  const [y, m, d] = parseISO(iso);
   return new Intl.DateTimeFormat(lang === "ar" ? "ar-EG-u-ca-gregory" : "en-US", { ...opts, timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
 }
 

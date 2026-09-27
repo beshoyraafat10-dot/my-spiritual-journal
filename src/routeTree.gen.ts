@@ -10,33 +10,106 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppHomeRouteImport } from './routes/_app.home'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppSearchRouteImport } from './routes/_app.search'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as AppDayDayNumberRouteImport } from './routes/_app.day.$dayNumber'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppHomeRoute = AppHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSearchRoute = AppSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AppRoute,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppDayDayNumberRoute = AppDayDayNumberRouteImport.update({
+  id: '/day/$dayNumber',
+  path: '/day/$dayNumber',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/home': typeof AppHomeRoute
+  '/profile': typeof AppProfileRoute
+  '/search': typeof AppSearchRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/day/$dayNumber': typeof AppDayDayNumberRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/home': typeof AppHomeRoute
+  '/profile': typeof AppProfileRoute
+  '/search': typeof AppSearchRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/day/$dayNumber': typeof AppDayDayNumberRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/home': typeof AppHomeRoute
+  '/_app/profile': typeof AppProfileRoute
+  '/_app/search': typeof AppSearchRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/_app/day/$dayNumber': typeof AppDayDayNumberRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/home'
+    | '/profile'
+    | '/search'
+    | '/auth/callback'
+    | '/day/$dayNumber'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/home'
+    | '/profile'
+    | '/search'
+    | '/auth/callback'
+    | '/day/$dayNumber'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/home'
+    | '/_app/profile'
+    | '/_app/search'
+    | '/auth/callback'
+    | '/_app/day/$dayNumber'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthCallbackRoute: typeof AuthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +121,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/home': {
+      id: '/_app/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AppHomeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/search': {
+      id: '/_app/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AppSearchRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/day/$dayNumber': {
+      id: '/_app/day/$dayNumber'
+      path: '/day/$dayNumber'
+      fullPath: '/day/$dayNumber'
+      preLoaderRoute: typeof AppDayDayNumberRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppHomeRoute: typeof AppHomeRoute
+  AppProfileRoute: typeof AppProfileRoute
+  AppSearchRoute: typeof AppSearchRoute
+  AppDayDayNumberRoute: typeof AppDayDayNumberRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppHomeRoute: AppHomeRoute,
+  AppProfileRoute: AppProfileRoute,
+  AppSearchRoute: AppSearchRoute,
+  AppDayDayNumberRoute: AppDayDayNumberRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthCallbackRoute: AuthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

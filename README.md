@@ -5,7 +5,7 @@ Built with React 19 + TypeScript, TanStack Start/Router, Tailwind CSS v4, and yo
 
 ## 1. Supabase setup
 1. Create a project at https://supabase.com.
-2. Open **SQL Editor**, paste `database/001_khalwety_init.sql`, and run it. This creates `profiles`, `journeys`, `journal_entries`, `prayer_requests`, indexes, `updated_at` triggers, integrity triggers, a signup profile trigger, grants, and strict per-user RLS.
+2. Open **SQL Editor**, run `database/001_khalwety_init.sql`, then `database/002_cover_photo_and_reading_ref.sql` (adds the private `avatars` bucket for cover photos and the reading reference column). This creates `profiles`, `journeys`, `journal_entries`, `prayer_requests`, indexes, `updated_at` triggers, integrity triggers, a signup profile trigger, grants, and strict per-user RLS.
 3. **Project Settings → API**: copy the Project URL and the `anon` public key.
    Never use the `service_role` key in this app.
 4. **Authentication → URL Configuration**:

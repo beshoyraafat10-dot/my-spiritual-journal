@@ -35,39 +35,47 @@
   --color-rose: var(--rose);
   --color-gold: var(--gold);
   --color-paper: var(--paper);
-  --font-display: "Cormorant Garamond", "Aref Ruqaa", serif;
-  --font-body: "Lora", "Noto Naskh Arabic", serif;
-  --shadow-soft: 0 10px 30px -12px oklch(0.35 0.08 330 / 0.25);
-  --shadow-cover: 0 30px 60px -20px oklch(0.25 0.08 330 / 0.55), inset 0 0 0 1px oklch(0.8 0.1 85 / 0.35);
+  --color-ink: var(--ink);
+  --color-parchment: var(--parchment);
+  --color-gold-deep: var(--gold-deep);
+  --font-display: "Amiri", "Cormorant Garamond", serif;
+  --font-body: "Noto Naskh Arabic", "Lora", serif;
+  --shadow-soft: 0 12px 30px -14px oklch(0.35 0.06 60 / 0.35);
+  --shadow-cover: 0 30px 60px -24px oklch(0.3 0.06 60 / 0.6);
 }
 
 :root {
+  /* Warm parchment, brown ink and gold — taken from the printed "الخلوة الروحية" page. */
   --radius: 1rem;
-  --paper: oklch(0.975 0.015 85);
-  --background: oklch(0.965 0.018 80);
-  --foreground: oklch(0.28 0.05 330);
-  --card: oklch(0.99 0.01 85);
-  --card-foreground: oklch(0.28 0.05 330);
-  --popover: oklch(0.99 0.01 85);
-  --popover-foreground: oklch(0.28 0.05 330);
-  --plum: oklch(0.33 0.09 335);
-  --lavender: oklch(0.85 0.05 300);
-  --sage: oklch(0.72 0.05 150);
-  --rose: oklch(0.8 0.06 15);
-  --gold: oklch(0.74 0.11 80);
+  --parchment: oklch(0.955 0.03 82);
+  --paper: oklch(0.975 0.022 85);
+  --ink: oklch(0.27 0.04 55);
+  --background: oklch(0.945 0.03 80);
+  --foreground: var(--ink);
+  --card: oklch(0.97 0.025 84);
+  --card-foreground: var(--ink);
+  --popover: var(--card);
+  --popover-foreground: var(--ink);
+  --plum: oklch(0.34 0.06 55);
+  --lavender: oklch(0.9 0.05 85);
+  --sage: oklch(0.7 0.07 125);
+  --rose: oklch(0.58 0.13 35);
+  --gold: oklch(0.7 0.12 78);
+  --gold-deep: oklch(0.52 0.1 70);
   --primary: var(--plum);
-  --primary-foreground: oklch(0.97 0.02 85);
-  --secondary: oklch(0.93 0.03 300);
+  --primary-foreground: oklch(0.97 0.025 85);
+  --secondary: oklch(0.91 0.045 82);
   --secondary-foreground: var(--plum);
-  --muted: oklch(0.93 0.02 80);
-  --muted-foreground: oklch(0.5 0.04 330);
-  --accent: oklch(0.9 0.04 15);
+  --muted: oklch(0.92 0.03 80);
+  --muted-foreground: oklch(0.5 0.04 60);
+  --accent: oklch(0.88 0.06 80);
   --accent-foreground: var(--plum);
-  --destructive: oklch(0.55 0.18 25);
+  --destructive: oklch(0.52 0.17 30);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.88 0.03 70);
-  --input: oklch(0.88 0.03 70);
+  --border: oklch(0.84 0.05 78);
+  --input: oklch(0.84 0.05 78);
   --ring: var(--gold);
+  --rule: oklch(0.45 0.05 60 / 0.35);
 }
 
 @layer base {
@@ -76,21 +84,33 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    background-image: radial-gradient(circle at 20% 0%, oklch(0.93 0.04 300 / 0.5), transparent 50%),
-      radial-gradient(circle at 100% 100%, oklch(0.92 0.04 15 / 0.4), transparent 50%);
+    background-image: radial-gradient(ellipse at 15% 0%, oklch(0.97 0.04 90 / 0.9), transparent 55%),
+      radial-gradient(ellipse at 100% 100%, oklch(0.88 0.06 70 / 0.45), transparent 55%),
+      radial-gradient(ellipse at 0% 80%, oklch(0.9 0.05 75 / 0.4), transparent 50%);
     background-attachment: fixed;
     min-height: 100vh;
   }
-  h1, h2, h3 { font-family: var(--font-display); }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 700; }
   textarea, input { font-family: var(--font-body); }
 }
 
-@utility cover-leather {
-  background: linear-gradient(145deg, oklch(0.38 0.1 335), oklch(0.26 0.08 330));
-  box-shadow: var(--shadow-cover);
+@utility parchment {
+  background-color: var(--paper);
+  background-image: radial-gradient(ellipse at 30% 20%, oklch(0.99 0.02 90 / 0.9), transparent 60%),
+    radial-gradient(ellipse at 80% 90%, oklch(0.9 0.05 75 / 0.55), transparent 60%),
+    radial-gradient(ellipse at 0% 50%, oklch(0.93 0.04 80 / 0.6), transparent 45%);
+  box-shadow: var(--shadow-soft);
 }
+/* Double gold rule just inside a parchment page, like the printed frame. */
 @utility gold-frame {
-  box-shadow: inset 0 0 0 2px var(--gold), inset 0 0 0 6px transparent, inset 0 0 0 7px oklch(0.74 0.11 80 / 0.5);
+  box-shadow: var(--shadow-soft), inset 0 0 0 7px var(--paper), inset 0 0 0 8.5px var(--gold), inset 0 0 0 12px transparent,
+    inset 0 0 0 13px oklch(0.7 0.12 78 / 0.55);
+}
+@utility gold-text {
+  background: linear-gradient(180deg, oklch(0.8 0.13 85), oklch(0.55 0.11 65) 60%, oklch(0.72 0.12 80));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 @utility paper-card {
   background: var(--card);
@@ -98,13 +118,38 @@
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-soft);
 }
+@utility btn-gold {
+  background: linear-gradient(180deg, oklch(0.82 0.12 85), oklch(0.66 0.12 72));
+  color: var(--ink);
+  border: 1px solid oklch(0.55 0.1 70 / 0.6);
+  box-shadow: 0 8px 18px -10px oklch(0.45 0.1 65 / 0.8), inset 0 1px 0 oklch(0.95 0.06 90 / 0.8);
+}
 @utility field {
   width: 100%;
-  background: var(--paper);
+  background: oklch(0.99 0.015 85 / 0.85);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 0.65rem 0.85rem;
   line-height: 1.9;
   outline: none;
-  &:focus { border-color: var(--gold); box-shadow: 0 0 0 3px oklch(0.74 0.11 80 / 0.2); }
+  &:focus { border-color: var(--gold); box-shadow: 0 0 0 3px oklch(0.7 0.12 78 / 0.2); }
+}
+/* Writing on ruled lines, like the printed journal. */
+@utility ruled {
+  --lh: 2.25rem;
+  width: 100%;
+  display: block;
+  resize: none;
+  overflow: hidden;
+  background-color: transparent;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--lh) - 1px), var(--rule) calc(var(--lh) - 1px), var(--rule) var(--lh));
+  background-attachment: local;
+  line-height: var(--lh);
+  padding: 0 0.25rem;
+  border: 0;
+  outline: none;
+  color: var(--ink);
+  font-size: 1.02rem;
+  &:focus { background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--lh) - 1px), var(--gold) calc(var(--lh) - 1px), var(--gold) var(--lh)); }
+  &::placeholder { color: oklch(0.5 0.04 60 / 0.45); }
 }

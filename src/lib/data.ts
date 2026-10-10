@@ -19,13 +19,14 @@ export type Entry = {
   other_reflections: string | null;
   memory_verse: string | null;
   scripture_reference: string | null;
+  reading_reference: string | null;
   is_completed: boolean;
 };
 export type PrayerRequest = { id: string; journal_entry_id: string; request_text: string; response_date: string | null };
 
 export const TEXT_FIELDS = [
   "god_attribute", "sin_to_avoid", "commandment_to_follow", "privilege_to_thank", "promise_to_hold",
-  "example_to_follow", "prayer_response", "other_reflections", "memory_verse", "scripture_reference",
+  "example_to_follow", "prayer_response", "other_reflections", "memory_verse", "scripture_reference", "reading_reference",
 ] as const;
 export type TextField = (typeof TEXT_FIELDS)[number];
 
@@ -75,6 +76,52 @@ export async function getProfile(): Promise<Profile | null> {
 export async function updateLanguage(lang: "ar" | "en") {
   const user = await uid();
   await supabase.from("profiles").update({ preferred_language: lang }).eq("user_id", user.id);
+}
+
+export async function updateDisplayName(name: string) {
+  const user = await uid();
+  const { error } = await supabase.from("profiles").update({ display_name: name }).eq("user_id", user.id);
+  if (error) throw error;
+}
+
+const AVATAR_BUCKET = "avatars";
+
+/** Shrinks a photo to at most 900px so uploads stay small on mobile data. Falls back to the original file. */
+async function shrinkImage(file: File): Promise<Blob> {
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, 900 / Math.max(bmp.width, bmp.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bmp.width * scale);
+    canvas.height = Math.round(bmp.height * scale);
+    canvas.getContext("2d")!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", 0.86));
+    return blob ?? file;
+  } catch {
+    return file;
+  }
+}
+
+/** Uploads the cover photo to the private bucket under the user's own folder and saves its path on the profile. */
+export async function uploadAvatar(file: File): Promise<string> {
+  const user = await uid();
+  const blob = await shrinkImage(file);
+  const type = blob.type || "image/jpeg";
+  const path = `${user.id}/avatar.${type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg"}`;
+  const up = await supabase.storage.from(AVATAR_BUCKET).upload(path, blob, { upsert: true, contentType: type, cacheControl: "60" });
+  if (up.error) throw up.error;
+  const { error } = await supabase.from("profiles").update({ avatar_url: path }).eq("user_id", user.id);
+  if (error) throw error;
+  return path;
+}
+
+/** avatar_url holds a storage path for uploaded photos (or a full URL for older profiles). */
+export async function getAvatarUrl(path: string | null | undefined): Promise<string | null> {
+  if (!path) return null;
+  if (/^https?:\/\//.test(path)) return path;
+  const { data, error } = await supabase.storage.from(AVATAR_BUCKET).createSignedUrl(path, 60 * 60 * 24);
+  if (error) throw error;
+  return data.signedUrl;
 }
 
 export async function listEntrySummaries(): Promise<Pick<Entry, "day_number" | "is_completed">[]> {

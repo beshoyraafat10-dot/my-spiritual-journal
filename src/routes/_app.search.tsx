@@ -20,7 +20,7 @@ function SearchPage() {
 
   return (
     <div className="space-y-5">
-      <input autoFocus className="field paper-card text-lg" placeholder={t("searchPh")} value={q} onChange={(e) => setQ(e.target.value)} />
+      <input autoFocus className="field rounded-full border-gold/60 px-5 text-lg shadow-soft" placeholder={t("searchPh")} value={q} onChange={(e) => setQ(e.target.value)} />
       {!debounced ? <Centered><p>{t("searchEmpty")}</p></Centered>
         : sq.isLoading ? <Centered><Spinner /></Centered>
         : sq.error ? <Centered><p>{t("errorGeneric")}</p></Centered>
@@ -29,8 +29,8 @@ function SearchPage() {
           <ul className="space-y-3">
             {sq.data.map((h) => (
               <li key={h.day_number}>
-                <Link to="/day/$dayNumber" params={{ dayNumber: String(h.day_number) }} className="paper-card block p-4 transition hover:-translate-y-0.5">
-                  <p className="text-xs text-gold">{t("day")} {formatNumber(h.day_number, lang)} · {formatDate(h.entry_date, lang)}</p>
+                <Link to="/day/$dayNumber" params={{ dayNumber: String(h.day_number) }} className="parchment block rounded-2xl border border-gold/40 p-4 transition hover:-translate-y-0.5">
+                  <p className="text-xs font-bold text-gold-deep">{t("day")} {formatNumber(h.day_number, lang)} · {formatDate(h.entry_date, lang)}</p>
                   <p className="mt-1 line-clamp-2 text-foreground">{h.snippet}</p>
                 </Link>
               </li>

@@ -5,6 +5,8 @@ import { getJourney, listEntrySummaries } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
 import { TOTAL_DAYS, currentDay, dateForDay, dayForDate, formatDate, formatNumber, parseISO, rawDay, todayLocalISO } from "@/lib/journey";
 import { Centered, Spinner } from "@/components/Shell";
+import { Corners, JourneyCover } from "@/components/Ornate";
+import { useMe } from "@/lib/me";
 
 export const Route = createFileRoute("/_app/home")({
   head: () => ({ meta: [{ title: "My Year | Khalwety" }, { name: "description", content: "Your 365-day journey overview." }] }),
@@ -18,6 +20,7 @@ function Home() {
   const eq = useQuery({ queryKey: ["entries"], queryFn: listEntrySummaries });
   const today = todayLocalISO();
   const [monthOffset, setMonthOffset] = useState<number | null>(null);
+  const me = useMe();
 
   const completed = useMemo(() => new Set((eq.data ?? []).filter((e) => e.is_completed).map((e) => e.day_number)), [eq.data]);
   const started = useMemo(() => new Set((eq.data ?? []).map((e) => e.day_number)), [eq.data]);
@@ -51,32 +54,40 @@ function Home() {
 
   return (
     <div className="space-y-6">
-      <section className="paper-card overflow-hidden p-6">
+      <JourneyCover
+        name={me.name}
+        photoUrl={me.photoUrl}
+        onPickPhoto={() => navigate({ to: "/profile" })}
+        footer={`${t("day")} ${formatNumber(cur, lang)} ${t("of")} ${formatNumber(TOTAL_DAYS, lang)}`}
+      />
+
+      <section className="parchment gold-frame relative overflow-hidden rounded-[1.25rem] p-6">
+        <Corners size="w-12" />
         <p className="text-sm text-muted-foreground">{formatDate(today, lang)}</p>
         <div className="mt-3 grid grid-cols-2 gap-4">
-          <div className="rounded-xl bg-secondary p-4">
+          <div className="rounded-xl border border-gold/40 bg-paper/70 p-4">
             <p className="text-xs text-muted-foreground">{t("journeyDay")}</p>
-            <p className="font-display text-4xl font-bold text-primary">{formatNumber(cur, lang)}<span className="text-base font-normal text-muted-foreground"> / {formatNumber(TOTAL_DAYS, lang)}</span></p>
+            <p className="font-display text-4xl font-bold text-ink">{formatNumber(cur, lang)}<span className="text-base font-normal text-muted-foreground"> / {formatNumber(TOTAL_DAYS, lang)}</span></p>
           </div>
-          <div className="rounded-xl bg-accent/60 p-4">
+          <div className="rounded-xl border border-gold/40 bg-paper/70 p-4">
             <p className="text-xs text-muted-foreground">{t("completedEntries")}</p>
-            <p className="font-display text-4xl font-bold text-primary">{formatNumber(completed.size, lang)}<span className="text-base font-normal text-muted-foreground"> / {formatNumber(TOTAL_DAYS, lang)}</span></p>
+            <p className="font-display text-4xl font-bold text-ink">{formatNumber(completed.size, lang)}<span className="text-base font-normal text-muted-foreground"> / {formatNumber(TOTAL_DAYS, lang)}</span></p>
           </div>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
-          <div className="h-full rounded-full bg-gradient-to-r from-sage to-gold transition-all" style={{ width: `${pct}%` }} />
+          <div className="h-full rounded-full bg-gradient-to-r from-gold-deep to-gold transition-all" style={{ width: `${pct}%` }} />
         </div>
         {raw > TOTAL_DAYS && <p className="mt-3 text-sm text-sage">{t("journeyEnded")}</p>}
-        <button onClick={() => navigate({ to: "/day/$dayNumber", params: { dayNumber: String(cur) } })} className="mt-5 w-full rounded-full bg-primary px-5 py-3 font-semibold text-primary-foreground shadow-soft">
+        <button onClick={() => navigate({ to: "/day/$dayNumber", params: { dayNumber: String(cur) } })} className="btn-gold mt-5 w-full rounded-full px-5 py-3 font-display text-xl font-bold">
           {t("openToday")} · {t("day")} {formatNumber(cur, lang)}
         </button>
       </section>
 
-      <section className="paper-card p-5">
+      <section className="parchment gold-frame relative rounded-[1.25rem] p-5">
         <div className="mb-4 flex items-center justify-between">
-          <button disabled={off <= 0} onClick={() => setMonthOffset(off - 1)} className="rounded-full px-3 py-1 text-xl text-primary disabled:opacity-30" aria-label={t("prev")}>{lang === "ar" ? "›" : "‹"}</button>
-          <h2 className="text-2xl font-semibold text-primary">{monthLabel}</h2>
-          <button disabled={off >= totalMonths - 1} onClick={() => setMonthOffset(off + 1)} className="rounded-full px-3 py-1 text-xl text-primary disabled:opacity-30" aria-label={t("next")}>{lang === "ar" ? "‹" : "›"}</button>
+          <button disabled={off <= 0} onClick={() => setMonthOffset(off - 1)} className="rounded-full px-3 py-1 text-xl text-ink disabled:opacity-30" aria-label={t("prev")}>{lang === "ar" ? "›" : "‹"}</button>
+          <h2 className="text-2xl font-semibold text-ink">{monthLabel}</h2>
+          <button disabled={off >= totalMonths - 1} onClick={() => setMonthOffset(off + 1)} className="rounded-full px-3 py-1 text-xl text-ink disabled:opacity-30" aria-label={t("next")}>{lang === "ar" ? "‹" : "›"}</button>
         </div>
         <div className="grid grid-cols-7 gap-1.5 text-center">
           {weekdays.map((w, i) => <div key={i} className="pb-1 text-xs text-muted-foreground">{w}</div>)}
@@ -90,12 +101,12 @@ function Home() {
             const isCur = dn === cur && raw <= TOTAL_DAYS;
             const done = completed.has(dn);
             const cls = done
-              ? "bg-sage/70 text-plum"
+              ? "bg-sage/80 text-white"
               : isCur
-                ? "bg-primary text-primary-foreground ring-2 ring-gold"
+                ? "bg-primary text-primary-foreground ring-2 ring-gold ring-offset-1 ring-offset-paper"
                 : future
                   ? "bg-muted/60 text-muted-foreground/60"
-                  : started.has(dn) ? "bg-lavender/60 text-plum" : "bg-paper text-plum border";
+                  : started.has(dn) ? "bg-accent text-ink" : "bg-paper/80 text-ink border border-gold/30";
             const inner = (
               <div className={`flex aspect-square flex-col items-center justify-center rounded-lg text-sm ${cls}`}>
                 <span className="font-semibold">{label}</span>
@@ -108,7 +119,7 @@ function Home() {
           })}
         </div>
         <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-sage/70" />{t("completed")}</span>
+          <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-sage/80" />{t("completed")}</span>
           <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-primary" />{t("current")}</span>
           <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-muted" />{t("upcoming")}</span>
         </div>

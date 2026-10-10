@@ -8,6 +8,7 @@ import {
 import { useI18n, type Key } from "@/lib/i18n";
 import { TOTAL_DAYS, dateForDay, formatDate, formatNumber, isDayUnlocked } from "@/lib/journey";
 import { Centered, Spinner } from "@/components/Shell";
+import { PageTitle, ParchmentPage, RuledText, SectionTitle } from "@/components/Ornate";
 
 export const Route = createFileRoute("/_app/day/$dayNumber")({
   head: ({ params }) => ({ meta: [{ title: `Day ${params.dayNumber} | Khalwety` }, { name: "description", content: "Daily spiritual journal page." }] }),
@@ -34,11 +35,14 @@ function DayPage() {
       {unlocked ? (
         <Editor key={day} journey={journey} day={day} />
       ) : (
-        <div className="paper-card p-10 text-center">
-          <p className="text-4xl">🔒</p>
-          <h2 className="mt-3 text-2xl text-primary">{t("locked")}</h2>
-          <p className="mt-2 text-muted-foreground">{t("lockedSub")} {formatDate(date, lang)}</p>
-        </div>
+        <ParchmentPage>
+          <PageTitle>{t("dayTitle")}</PageTitle>
+          <div className="py-10 text-center">
+            <p className="text-4xl">🔒</p>
+            <h2 className="mt-3 text-2xl text-ink">{t("locked")}</h2>
+            <p className="mt-2 text-muted-foreground">{t("lockedSub")} {formatDate(date, lang)}</p>
+          </div>
+        </ParchmentPage>
       )}
     </div>
   );
@@ -46,25 +50,24 @@ function DayPage() {
 
 function DayHeader({ journey, day }: { journey: Journey; day: number }) {
   const { t, lang } = useI18n();
-  const date = dateForDay(journey.start_date, day);
   const short: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
+  const pill = "rounded-full border border-gold/50 bg-paper/80 px-3 py-1.5 text-ink shadow-sm hover:bg-secondary";
   return (
-    <div className="paper-card p-5 text-center">
-      <p className="text-xs uppercase tracking-widest text-gold">{t("day")} {formatNumber(day, lang)} {t("of")} {formatNumber(TOTAL_DAYS, lang)}</p>
-      <h1 className="mt-1 text-3xl font-semibold text-primary">{formatDate(date, lang)}</h1>
-      <div className="mt-4 flex items-center justify-between gap-2 text-sm">
-        {day > 1 ? (
-          <Link to="/day/$dayNumber" params={{ dayNumber: String(day - 1) }} className="rounded-full border px-3 py-1.5 text-primary hover:bg-secondary">
-            {lang === "ar" ? "→" : "←"} {t("prev")} · {formatDate(dateForDay(journey.start_date, day - 1), lang, short)}
-          </Link>
-        ) : <span />}
-        <Link to="/home" className="text-muted-foreground underline-offset-4 hover:underline">{t("back")}</Link>
-        {day < TOTAL_DAYS ? (
-          <Link to="/day/$dayNumber" params={{ dayNumber: String(day + 1) }} className="rounded-full border px-3 py-1.5 text-primary hover:bg-secondary">
-            {formatDate(dateForDay(journey.start_date, day + 1), lang, short)} · {t("next")} {lang === "ar" ? "←" : "→"}
-          </Link>
-        ) : <span />}
-      </div>
+    <div className="flex items-center justify-between gap-2 text-sm">
+      {day > 1 ? (
+        <Link to="/day/$dayNumber" params={{ dayNumber: String(day - 1) }} className={pill}>
+          {lang === "ar" ? "→" : "←"} {formatDate(dateForDay(journey.start_date, day - 1), lang, short)}
+        </Link>
+      ) : <span />}
+      <Link to="/home" className="text-center leading-tight">
+        <span className="block text-xs text-gold-deep">{t("day")} {formatNumber(day, lang)} {t("of")} {formatNumber(TOTAL_DAYS, lang)}</span>
+        <span className="text-muted-foreground underline-offset-4 hover:underline">{t("back")}</span>
+      </Link>
+      {day < TOTAL_DAYS ? (
+        <Link to="/day/$dayNumber" params={{ dayNumber: String(day + 1) }} className={pill}>
+          {formatDate(dateForDay(journey.start_date, day + 1), lang, short)} {lang === "ar" ? "←" : "→"}
+        </Link>
+      ) : <span />}
     </div>
   );
 }
@@ -72,7 +75,7 @@ function DayHeader({ journey, day }: { journey: Journey; day: number }) {
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 function Editor({ journey, day }: { journey: Journey; day: number }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const qc = useQueryClient();
   const eq = useQuery({ queryKey: ["entry", day], queryFn: () => getEntry(day), staleTime: 0 });
   const [form, setForm] = useState<Partial<Entry> | null>(null);
@@ -179,82 +182,107 @@ function Editor({ journey, day }: { journey: Journey; day: number }) {
   if (eq.isLoading || !form) return <Centered><Spinner /></Centered>;
   if (eq.error) return <Centered><p>{t("errorGeneric")}</p></Centered>;
 
-  const field = (k: TextField, label: Key, rows = 2, hint?: Key) => (
-    <label className="block">
-      <span className="mb-1.5 block text-sm font-medium text-plum">{t(label)}</span>
-      <textarea rows={rows} className="field resize-y" placeholder={hint ? t(hint) : ""} value={(form[k] as string) ?? ""} onChange={(e) => update({ [k]: e.target.value })} />
+  const text = (k: TextField) => (form[k] as string) ?? "";
+  const line = (k: TextField, label: Key) => (
+    <label className="flex items-end gap-2">
+      <span className="shrink-0 pb-1.5 text-[0.95rem] font-bold text-ink">{t(label)} :</span>
+      <RuledText value={text(k)} onChange={(e) => update({ [k]: e.target.value })} />
     </label>
   );
+  const date = dateForDay(journey.start_date, day);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <SaveBadge state={state} onRetry={() => void flush()} />
 
-      <Section title={t("q1")} accent="bg-lavender">{field("god_attribute", "godAttr", 3)}</Section>
+      <ParchmentPage>
+        <PageTitle>{t("dayTitle")}</PageTitle>
 
-      <Section title={t("q2")} accent="bg-rose">
-        <div className="space-y-4">
-          {field("sin_to_avoid", "sin")}
-          {field("commandment_to_follow", "command")}
-          {field("privilege_to_thank", "privilege")}
-          {field("promise_to_hold", "promise")}
-          {field("example_to_follow", "example")}
-        </div>
-      </Section>
-
-      <Section title={t("q3")} accent="bg-sage">
-        <textarea rows={5} className="field resize-y" value={form.prayer_response ?? ""} onChange={(e) => update({ prayer_response: e.target.value })} />
-      </Section>
-
-      <Section title={t("requests")} accent="bg-gold">
-        <div className="space-y-3">
-          {requests.map((r) => (
-            <div key={r.id} className="rounded-xl border bg-paper p-3">
-              <textarea rows={2} className="field resize-y bg-card" placeholder={t("requestText")} value={r.request_text.trim() === "" ? "" : r.request_text} onChange={(e) => onEditRequest(r.id, { request_text: e.target.value })} />
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-                <label className="flex items-center gap-2 text-muted-foreground">
-                  {t("responseDate")}
-                  <input type="date" className="field w-auto bg-card py-1" value={r.response_date ?? ""} onChange={(e) => onEditRequest(r.id, { response_date: e.target.value || null })} />
-                </label>
-                <button onClick={() => onDeleteRequest(r.id)} className="text-destructive hover:underline">{t("remove")}</button>
-              </div>
-            </div>
-          ))}
-          <button onClick={onAddRequest} className="w-full rounded-xl border border-dashed border-gold py-2.5 text-sm font-medium text-plum hover:bg-secondary">+ {t("addRequest")}</button>
-        </div>
-      </Section>
-
-      <Section title={t("reflections")} accent="bg-lavender">
-        <textarea rows={4} className="field resize-y" placeholder={t("reflectionsHint")} value={form.other_reflections ?? ""} onChange={(e) => update({ other_reflections: e.target.value })} />
-      </Section>
-
-      <Section title={t("verse")} accent="bg-gold">
-        <div className="space-y-3">
-          <textarea rows={3} className="field resize-y font-display text-lg" value={form.memory_verse ?? ""} onChange={(e) => update({ memory_verse: e.target.value })} />
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-plum">{t("reference")}</span>
-            <input className="field" value={form.scripture_reference ?? ""} onChange={(e) => update({ scripture_reference: e.target.value })} />
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+          <p className="pb-1.5 font-bold text-ink">
+            {t("dateLabel")} : <span className="font-normal">{formatDate(date, lang)}</span>
+          </p>
+          <label className="flex flex-1 items-end gap-2 sm:max-w-[55%]">
+            <span className="shrink-0 pb-1.5 font-bold text-ink">{t("readingRef")} :</span>
+            <RuledText value={text("reading_reference")} onChange={(e) => update({ reading_reference: e.target.value })} />
           </label>
         </div>
-      </Section>
 
-      <label className="paper-card flex cursor-pointer items-center justify-center gap-3 p-5">
-        <input type="checkbox" className="h-5 w-5 accent-[var(--plum)]" checked={!!form.is_completed} onChange={(e) => update({ is_completed: e.target.checked }, true)} />
-        <span className="font-display text-xl font-semibold text-primary">{t("markDone")}</span>
+        <div className="mt-7 space-y-8">
+          <section>
+            <SectionTitle title={t("q1")} sub={t("q1Sub")} />
+            <RuledText minRows={2} value={text("god_attribute")} onChange={(e) => update({ god_attribute: e.target.value })} />
+          </section>
+
+          <section>
+            <SectionTitle title={t("q2")} />
+            <div className="space-y-1">
+              {line("sin_to_avoid", "sin")}
+              {line("commandment_to_follow", "command")}
+              {line("privilege_to_thank", "privilege")}
+              {line("promise_to_hold", "promise")}
+              {line("example_to_follow", "example")}
+            </div>
+          </section>
+
+          <section>
+            <SectionTitle title={t("q3")} sub={t("q3Sub")} />
+            <RuledText minRows={4} value={text("prayer_response")} onChange={(e) => update({ prayer_response: e.target.value })} />
+          </section>
+
+          <section>
+            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4">
+              <h2 className="font-body text-xl font-bold text-ink sm:text-2xl">{t("requests")} :</h2>
+              <p className="text-xs text-muted-foreground">{t("requestsHint")}</p>
+            </div>
+            <div className="space-y-2">
+              {requests.map((r) => (
+                <div key={r.id} className="flex items-end gap-2">
+                  <RuledText
+                    placeholder={t("requestText")}
+                    value={r.request_text.trim() === "" ? "" : r.request_text}
+                    onChange={(e) => onEditRequest(r.id, { request_text: e.target.value })}
+                  />
+                  <input
+                    type="date"
+                    aria-label={t("responseDate")}
+                    title={t("responseDate")}
+                    className="mb-1 w-[8.5rem] shrink-0 rounded-lg border border-gold/50 bg-paper/80 px-1.5 py-1 text-xs text-ink"
+                    value={r.response_date ?? ""}
+                    onChange={(e) => onEditRequest(r.id, { response_date: e.target.value || null })}
+                  />
+                  <button onClick={() => onDeleteRequest(r.id)} aria-label={t("remove")} className="mb-1 shrink-0 rounded-full px-2 text-lg leading-none text-destructive/80 hover:text-destructive">×</button>
+                </div>
+              ))}
+              <button onClick={onAddRequest} className="mt-1 w-full rounded-xl border border-dashed border-gold py-2 text-sm font-semibold text-ink hover:bg-secondary/60">+ {t("addRequest")}</button>
+            </div>
+          </section>
+
+          <section>
+            <SectionTitle title={t("reflections")} sub={t("reflectionsHint")} />
+            <RuledText minRows={4} value={text("other_reflections")} onChange={(e) => update({ other_reflections: e.target.value })} />
+          </section>
+
+          <section>
+            <SectionTitle title={t("verse")} />
+            <div className="relative rounded-2xl border-2 border-gold/80 bg-paper/60 px-8 py-4 shadow-[inset_0_0_0_4px_rgba(255,248,230,0.7),inset_0_0_0_5px_rgba(184,134,43,0.45)]">
+              <span aria-hidden className="absolute start-2 top-1 font-display text-4xl text-gold-deep">“</span>
+              <span aria-hidden className="absolute bottom-0 end-2 font-display text-4xl text-gold-deep">”</span>
+              <RuledText minRows={2} className="font-display text-lg" value={text("memory_verse")} onChange={(e) => update({ memory_verse: e.target.value })} />
+            </div>
+            <label className="mx-auto mt-3 flex max-w-sm items-end gap-2">
+              <span className="shrink-0 pb-1.5 font-bold text-ink">{t("reference")} :</span>
+              <RuledText value={text("scripture_reference")} onChange={(e) => update({ scripture_reference: e.target.value })} />
+            </label>
+          </section>
+        </div>
+      </ParchmentPage>
+
+      <label className="btn-gold flex cursor-pointer items-center justify-center gap-3 rounded-full p-4">
+        <input type="checkbox" className="h-5 w-5 accent-[var(--gold-deep)]" checked={!!form.is_completed} onChange={(e) => update({ is_completed: e.target.checked }, true)} />
+        <span className="font-display text-xl font-bold">{t("markDone")}</span>
       </label>
     </div>
-  );
-}
-
-function Section({ title, accent, children }: { title: string; accent: string; children: React.ReactNode }) {
-  return (
-    <section className="paper-card p-5">
-      <div className="mb-4 flex items-center gap-3">
-        <span className={`h-6 w-1.5 rounded-full ${accent}`} />
-        <h2 className="text-xl font-semibold text-primary">{title}</h2>
-      </div>
-      {children}
-    </section>
   );
 }
 
@@ -262,8 +290,8 @@ function SaveBadge({ state, onRetry }: { state: SaveState; onRetry: () => void }
   const { t } = useI18n();
   if (state === "idle") return null;
   return (
-    <div className="sticky top-16 z-10 flex justify-center">
-      <span className={`rounded-full px-4 py-1 text-xs shadow-soft ${state === "error" ? "bg-destructive text-destructive-foreground" : state === "saved" ? "bg-sage/80 text-plum" : "bg-card text-muted-foreground"}`}>
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom,0px)+4.75rem)] z-40 flex justify-center [&_button]:pointer-events-auto">
+      <span className={`rounded-full px-4 py-1 text-xs shadow-soft ${state === "error" ? "bg-destructive text-destructive-foreground" : state === "saved" ? "bg-sage text-white" : "bg-paper text-muted-foreground"}`}>
         {state === "saving" ? t("saving") : state === "saved" ? `✓ ${t("saved")}` : (
           <button onClick={onRetry}>{t("saveError")} · {t("retry")}</button>
         )}

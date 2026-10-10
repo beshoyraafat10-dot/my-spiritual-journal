@@ -3,8 +3,6 @@
 // the hand spans ~26% of the shoulder width and sits ~24% in from the outer edge.
 export type HandSpot = { left: number; top: number; width: number; ratio: number }; // fractions of the image; ratio = image w/h
 
-const HAND_ASPECT = 248 / 272; // height / width of jesus-hand.png
-
 export function findHandSpot(img: HTMLImageElement): HandSpot | null {
   const W = 160;
   const H = Math.round((img.naturalHeight / img.naturalWidth) * W);
@@ -67,4 +65,3 @@ export function findHandSpot(img: HTMLImageElement): HandSpot | null {
   };
 }
 
-export { HAND_ASPECT };

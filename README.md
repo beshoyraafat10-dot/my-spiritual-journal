@@ -50,5 +50,7 @@ The app is a PWA (installable web app). Share the GitHub Pages link, then:
 - Past/current days editable; future days visible but locked; after day 365 everything stays open.
 - Progress = entries marked completed (not elapsed days).
 
-## Replacing the cover photo
-Replace `src/assets/cover-portrait.jpg` with your photo (portrait 4:5 works best).
+## Cover artwork
+`src/assets/cover-plate.webp` is the printed "الخلوة اليومية" cover with the original person and the verse line removed (LaMa inpainting), upscaled with Real-ESRGAN — a one-time edit; the app needs no AI service.
+Overlays: `cover-cartouche.webp` (name plate, drawn in front of the person), `jesus-hand.png` (placed on the person's far shoulder), `cover-ghost.png` (the empty place before a photo is added).
+Placement constants (in pixels of the 731×1098 original) live at the top of the cover section in `src/components/Ornate.tsx`.

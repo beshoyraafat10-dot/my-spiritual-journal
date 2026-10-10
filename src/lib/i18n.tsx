@@ -11,7 +11,10 @@ const dict = {
   jesusAlt: { ar: "السيد المسيح يسير في الطريق", en: "Jesus walking on the path" },
   addPhoto: { ar: "أضف صورتك", en: "Add your photo" },
   changePhoto: { ar: "تغيير الصورة", en: "Change photo" },
-  photoHint: { ar: "تظهر صورتك على غلاف خلوتك بجوار السيد المسيح", en: "Your photo appears on your cover beside Jesus" },
+  photoHint: {
+    ar: "تظهر صورتك على غلاف خلوتك بجوار السيد المسيح — اختر صورة وأنت واقف من الرأس حتى الركبة",
+    en: "Your photo appears on your cover beside Jesus — choose one of you standing, head to knees",
+  },
   uploading: { ar: "جاري رفع الصورة...", en: "Uploading photo…" },
   photoError: { ar: "تعذّر رفع الصورة. حاول مرة أخرى.", en: "Couldn't upload the photo. Please try again." },
   nameLabel: { ar: "الاسم", en: "Name" },

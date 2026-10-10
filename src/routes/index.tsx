@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import cover from "@/assets/cover-portrait.jpg";
 import { useI18n } from "@/lib/i18n";
-import { useAuth, signInWithGoogle } from "@/lib/auth";
+import { useAuth, signInWithEmail, signUpWithEmail } from "@/lib/auth";
+import { bootstrapUser } from "@/lib/data";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { LangToggle } from "@/components/Shell";
 
@@ -18,38 +19,52 @@ export const Route = createFileRoute("/")({
   component: Cover,
 });
 
-function GoogleIcon() {
-  return (
-    <svg viewBox="0 0 48 48" className="h-5 w-5" aria-hidden>
-      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
-      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
-      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z" />
-      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z" />
-    </svg>
-  );
-}
-
 function Cover() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { session, ready } = useAuth();
   const navigate = useNavigate();
-  const [busy, setBusy] = useState<null | "signup" | "signin">(null);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   useEffect(() => {
     if (ready && session) navigate({ to: "/home", replace: true });
   }, [ready, session, navigate]);
 
-  const go = async (intent: "signup" | "signin") => {
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
     setErr(null);
-    setBusy(intent);
+    setInfo(null);
+    setBusy(true);
     try {
-      await signInWithGoogle(intent);
-    } catch {
-      setErr(t("errorGeneric"));
-      setBusy(null);
+      if (mode === "signup") {
+        const { needsConfirmation } = await signUpWithEmail(email.trim(), password, name.trim());
+        if (needsConfirmation) {
+          setInfo(t("checkEmail"));
+          setMode("signin");
+          return;
+        }
+      } else {
+        await signInWithEmail(email.trim(), password);
+      }
+      await bootstrapUser(lang);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message.toLowerCase() : "";
+      if (msg.includes("invalid login")) setErr(t("badLogin"));
+      else if (msg.includes("not confirmed")) setErr(t("notConfirmed"));
+      else if (msg.includes("already registered")) setErr(t("alreadyRegistered"));
+      else setErr(t("errorGeneric"));
+    } finally {
+      setBusy(false);
     }
   };
+
+  const input =
+    "w-full rounded-full border border-gold/60 bg-paper/95 px-5 py-3 text-plum placeholder:text-plum/50 outline-none focus:border-gold focus:ring-2 focus:ring-gold/40";
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
@@ -65,22 +80,38 @@ function Cover() {
           </div>
           <h1 className="mt-6 text-4xl font-bold text-primary-foreground sm:text-5xl">{t("coverTitle")}</h1>
           <p className="mt-2 text-sm text-gold">{t("coverSub")}</p>
-          <div className="mt-6 flex w-full flex-col gap-3">
+          <form onSubmit={submit} className="mt-6 flex w-full flex-col gap-3">
+            {mode === "signup" && (
+              <input className={input} type="text" autoComplete="name" required placeholder={t("yourName")} value={name} onChange={(e) => setName(e.target.value)} />
+            )}
+            <input className={input} type="email" dir="ltr" autoComplete="email" inputMode="email" required placeholder={t("email")} value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input
+              className={input}
+              type="password"
+              dir="ltr"
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              required
+              minLength={6}
+              placeholder={mode === "signup" ? `${t("password")} — ${t("passwordHint")}` : t("password")}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
             <button
-              onClick={() => go("signup")}
-              disabled={!!busy || !isSupabaseConfigured}
-              className="flex items-center justify-center gap-3 rounded-full bg-gold px-5 py-3 font-semibold text-plum shadow-soft transition hover:brightness-105 disabled:opacity-60"
+              type="submit"
+              disabled={busy || !isSupabaseConfigured}
+              className="rounded-full bg-gold px-5 py-3 font-semibold text-plum shadow-soft transition hover:brightness-105 disabled:opacity-60"
             >
-              <GoogleIcon /> {busy === "signup" ? t("loading") : t("signUp")}
+              {busy ? t("loading") : mode === "signup" ? t("signUp") : t("signIn")}
             </button>
             <button
-              onClick={() => go("signin")}
-              disabled={!!busy || !isSupabaseConfigured}
-              className="flex items-center justify-center gap-3 rounded-full border border-gold/70 bg-paper/10 px-5 py-3 font-semibold text-primary-foreground transition hover:bg-paper/20 disabled:opacity-60"
+              type="button"
+              onClick={() => { setMode(mode === "signup" ? "signin" : "signup"); setErr(null); }}
+              className="text-sm text-primary-foreground/90 underline-offset-4 hover:underline"
             >
-              <GoogleIcon /> {busy === "signin" ? t("loading") : t("signIn")}
+              {mode === "signup" ? t("haveAccount") : t("noAccount")}
             </button>
-          </div>
+          </form>
+          {info && <p className="mt-4 text-sm text-gold">{info}</p>}
           {!isSupabaseConfigured && <p className="mt-4 text-xs text-rose">{t("notConfigured")}</p>}
           {err && <p className="mt-4 text-xs text-rose">{err}</p>}
         </div>

@@ -15,6 +15,9 @@ function Callback() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
   const [err, setErr] = useState(false);
+  // A confirmation link opened in another browser can't finish signing in there,
+  // but Supabase has already confirmed the email by the time it redirects here.
+  const [confirmedElsewhere, setConfirmedElsewhere] = useState(false);
   const ran = useRef(false);
 
   useEffect(() => {
@@ -36,14 +39,21 @@ function Callback() {
         navigate({ to: "/home", replace: true });
       } catch (e) {
         console.error(e);
-        setErr(true);
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("code") && !params.has("error")) setConfirmedElsewhere(true);
+        else setErr(true);
       }
     })();
   }, [lang, navigate]);
 
   return (
     <Centered>
-      {err ? (
+      {confirmedElsewhere ? (
+        <>
+          <p>{t("emailConfirmed")}</p>
+          <button onClick={() => navigate({ to: "/" })} className="rounded-full bg-primary px-5 py-2 text-primary-foreground">{t("signIn")}</button>
+        </>
+      ) : err ? (
         <>
           <p>{t("errorGeneric")}</p>
           <button onClick={() => navigate({ to: "/" })} className="rounded-full bg-primary px-5 py-2 text-primary-foreground">{t("retry")}</button>

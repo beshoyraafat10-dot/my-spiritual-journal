@@ -27,14 +27,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export const useAuth = () => useContext(Ctx);
 
-export async function signInWithGoogle(intent: "signup" | "signin") {
-  localStorage.setItem("khalwety-auth-intent", intent);
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
+// Email + password keeps sign-in inside the installed app: on iOS a home-screen app
+// has its own storage, so a magic link opened in Safari would sign in Safari instead.
+export async function signUpWithEmail(email: string, password: string, name: string) {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
     options: {
-      redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}auth/callback`,
-      queryParams: intent === "signin" ? { prompt: "select_account" } : { prompt: "consent select_account" },
+      data: { full_name: name },
+      emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}auth/callback`,
     },
   });
+  if (error) throw error;
+  // No session means Supabase sent a confirmation email first.
+  return { needsConfirmation: !data.session };
+}
+
+export async function signInWithEmail(email: string, password: string) {
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
 }

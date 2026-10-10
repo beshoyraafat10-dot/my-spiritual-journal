@@ -12,13 +12,10 @@ Built with React 19 + TypeScript, TanStack Start/Router, Tailwind CSS v4, and yo
    - Site URL: your production URL (e.g. `https://beshoyraafat10-dot.github.io/my-spiritual-journal`)
    - Redirect URLs: `http://localhost:8080/auth/callback`, `https://beshoyraafat10-dot.github.io/my-spiritual-journal/auth/callback` (plus any custom domain).
 
-## 2. Google OAuth
-1. Google Cloud Console → **APIs & Services → OAuth consent screen** → configure (External).
-2. **Credentials → Create credentials → OAuth client ID → Web application**.
-3. Authorized redirect URI: `https://<YOUR-PROJECT-REF>.supabase.co/auth/v1/callback`
-4. Copy Client ID + Secret into Supabase **Authentication → Providers → Google** and enable it.
-
-Both "Sign up with Google" and "Sign in with Google" use Supabase Google OAuth. After the callback (`/auth/callback`) the app idempotently ensures a profile and a journey exist; `journeys.start_date` is written once with the user's local date and is locked by a DB trigger.
+## 2. Email sign-in
+Users sign up and sign in with email + password inside the app (works in the installed home-screen app).
+- Supabase **Authentication → Sign In / Providers → Email**: keep it enabled. Turn **Confirm email** off unless you set up custom SMTP — Supabase's built-in mailer only delivers to your project's team members.
+- After sign-in the app idempotently ensures a profile and a journey exist; `journeys.start_date` is written once with the user's local date and is locked by a DB trigger.
 
 ## 3. Local development
 ```bash

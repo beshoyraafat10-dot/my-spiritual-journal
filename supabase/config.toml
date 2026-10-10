@@ -1,0 +1,5 @@
+project_id = "dhxhbwqcjzkphqyneiak"
+
+[functions.generate-cover]
+# The function checks the caller's session itself, so the CORS preflight can reach it.
+verify_jwt = false

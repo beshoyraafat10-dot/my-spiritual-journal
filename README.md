@@ -17,6 +17,12 @@ Users sign up and sign in with email + password inside the app (works in the ins
 - Supabase **Authentication → Sign In / Providers → Email**: keep it enabled. Turn **Confirm email** off unless you set up custom SMTP — Supabase's built-in mailer only delivers to your project's team members.
 - After sign-in the app idempotently ensures a profile and a journey exist; `journeys.start_date` is written once with the user's local date and is locked by a DB trigger.
 
+## AI cover (OpenAI)
+`supabase/functions/generate-cover` paints each person walking with Jesus from their uploaded photo (OpenAI image edits, reference image `public/cover-reference.jpg`). The app overlays the Arabic title and name.
+- Run `database/003_ai_cover.sql`.
+- Deploy: `npx supabase functions deploy generate-cover --project-ref <ref> --use-api`
+- Secret: `npx supabase secrets set OPENAI_API_KEY=... --project-ref <ref>` (optional: `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_QUALITY`, `COVER_MAX_GENERATIONS`, default 3 per person).
+
 ## 3. Local development
 ```bash
 cp .env.example .env   # fill VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY

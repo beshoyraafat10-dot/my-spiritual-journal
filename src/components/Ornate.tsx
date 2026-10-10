@@ -86,17 +86,22 @@ export function RuledText({ minRows = 1, value, className = "", ...rest }: { min
 }
 
 /**
- * The journey cover: Jesus on the path, the person's own photo beside Him,
- * and "وَسَارَ <name> مَعَ اللهِ" (Genesis 6:9) with their name.
+ * The journey cover with "وَسَارَ <name> مَعَ اللهِ" (Genesis 6:9). Shows the AI-painted
+ * picture of the person walking with Jesus when there is one; otherwise Jesus on the
+ * path with the person's own photo framed beside Him.
  */
 export function JourneyCover({
   name,
   photoUrl,
+  coverUrl,
+  painting,
   footer,
   onPickPhoto,
 }: {
   name?: string | null;
   photoUrl?: string | null;
+  coverUrl?: string | null | undefined;
+  painting?: boolean | undefined;
   footer?: ReactNode;
   onPickPhoto?: (() => void) | undefined;
 }) {
@@ -106,6 +111,47 @@ export function JourneyCover({
   const verse = lang === "ar" ? <>وَسَارَ {special} مَعَ اللهِ</> : <>And {special} walked with God</>;
   return (
     <div dir="ltr" className="relative aspect-[3/4.2] w-full overflow-hidden rounded-[1.4rem] bg-[#e9c88c] shadow-[var(--shadow-cover)]">
+      {coverUrl ? (
+        <>
+          <img src={coverUrl} alt={`${walker} ${t("jesusAlt")}`} className="absolute inset-0 h-full w-full object-cover object-bottom" />
+          <div className="absolute inset-x-0 top-0 h-[42%] bg-gradient-to-b from-[#fff3d6]/80 via-[#fff3d6]/40 to-transparent" />
+        </>
+      ) : (
+        <CollageScene walker={walker} photoUrl={photoUrl} onPickPhoto={onPickPhoto} />
+      )}
+      {painting && (
+        <div className="absolute inset-x-[10%] top-[44%] z-10 rounded-2xl bg-[#2b1a0a]/70 px-4 py-3 text-center text-[#fbecc8] shadow-xl backdrop-blur-sm" dir={lang === "ar" ? "rtl" : "ltr"}>
+          <p className="animate-pulse font-display text-lg font-bold">✨ {t("painting")}</p>
+          <p className="text-xs opacity-80">{t("paintingHint")}</p>
+        </div>
+      )}
+      {/* Title and verse */}
+      <div dir={lang === "ar" ? "rtl" : "ltr"} className="absolute inset-x-0 top-0 flex flex-col items-center px-6 pt-7 text-center">
+        <img src={divider} alt="" aria-hidden className="w-40 rotate-180 opacity-90" />
+        <h1 className="gold-text font-display text-[2.6rem] leading-tight drop-shadow-[0_2px_1px_rgba(255,240,200,0.6)] sm:text-5xl">{t("coverTitle")}</h1>
+        <img src={divider} alt="" aria-hidden className="w-56" />
+        <p className="mt-1 font-display text-2xl font-bold text-[#4a2e12] drop-shadow-[0_1px_0_rgba(255,245,220,0.8)] sm:text-[1.7rem]">{verse}</p>
+        <p className="text-sm font-semibold text-[#5a3a17]/90">{t("verseRef")}</p>
+      </div>
+      {/* Name plate */}
+      <div className="absolute inset-x-[8%] bottom-[4.5%]">
+        <div className="rounded-xl bg-gradient-to-b from-[#f4d98f] via-[#b8862b] to-[#f4d98f] p-[3px] shadow-lg">
+          <div dir={lang === "ar" ? "rtl" : "ltr"} className="parchment rounded-[0.6rem] px-4 py-2 text-center font-display text-lg font-bold text-ink">
+            {footer ?? <span className="name-special text-xl">{walker}</span>}
+          </div>
+        </div>
+      </div>
+      {/* Gold frame */}
+      <div aria-hidden className="pointer-events-none absolute inset-2 rounded-[1.1rem] border-2 border-[#d9b25a]/90 shadow-[inset_0_0_0_3px_rgba(255,240,200,0.35)]" />
+      <Corners size="w-14" />
+    </div>
+  );
+}
+
+function CollageScene({ walker, photoUrl, onPickPhoto }: { walker: string; photoUrl?: string | null | undefined; onPickPhoto?: (() => void) | undefined }) {
+  const { t } = useI18n();
+  return (
+    <>
       {/* Soft golden backdrop drawn from the same scene */}
       <img src={jesus} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-125 object-cover object-right blur-xl brightness-110 saturate-125" />
       <div className="absolute inset-0 bg-gradient-to-b from-[#fff3d6]/85 via-[#fff3d6]/10 to-[#7a4e1c]/25" />
@@ -140,25 +186,6 @@ export function JourneyCover({
           </div>
         </div>
       </div>
-      {/* Title and verse */}
-      <div dir={lang === "ar" ? "rtl" : "ltr"} className="absolute inset-x-0 top-0 flex flex-col items-center px-6 pt-7 text-center">
-        <img src={divider} alt="" aria-hidden className="w-40 rotate-180 opacity-90" />
-        <h1 className="gold-text font-display text-[2.6rem] leading-tight drop-shadow-[0_2px_1px_rgba(255,240,200,0.6)] sm:text-5xl">{t("coverTitle")}</h1>
-        <img src={divider} alt="" aria-hidden className="w-56" />
-        <p className="mt-1 font-display text-2xl font-bold text-[#4a2e12] drop-shadow-[0_1px_0_rgba(255,245,220,0.8)] sm:text-[1.7rem]">{verse}</p>
-        <p className="text-sm font-semibold text-[#5a3a17]/90">{t("verseRef")}</p>
-      </div>
-      {/* Name plate */}
-      <div className="absolute inset-x-[8%] bottom-[4.5%]">
-        <div className="rounded-xl bg-gradient-to-b from-[#f4d98f] via-[#b8862b] to-[#f4d98f] p-[3px] shadow-lg">
-          <div dir={lang === "ar" ? "rtl" : "ltr"} className="parchment rounded-[0.6rem] px-4 py-2 text-center font-display text-lg font-bold text-ink">
-            {footer ?? <span className="name-special text-xl">{walker}</span>}
-          </div>
-        </div>
-      </div>
-      {/* Gold frame */}
-      <div aria-hidden className="pointer-events-none absolute inset-2 rounded-[1.1rem] border-2 border-[#d9b25a]/90 shadow-[inset_0_0_0_3px_rgba(255,240,200,0.35)]" />
-      <Corners size="w-14" />
-    </div>
+    </>
   );
 }

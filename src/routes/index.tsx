@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth, signInWithEmail, signUpWithEmail } from "@/lib/auth";
-import { bootstrapUser, uploadAvatar } from "@/lib/data";
+import { bootstrapUser, requestCover, uploadAvatar } from "@/lib/data";
 import { JourneyCover, ParchmentPage, Watermark } from "@/components/Ornate";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { LangToggle } from "@/components/Shell";
@@ -63,7 +63,11 @@ function Cover() {
       }
       await bootstrapUser(lang);
       // The account works without a photo, so a failed upload shouldn't block sign-up.
-      if (mode === "signup" && photo) await uploadAvatar(photo).catch((e) => console.error(e));
+      if (mode === "signup" && photo) {
+        await uploadAvatar(photo)
+          .then(() => requestCover())
+          .catch((e) => console.error(e));
+      }
       navigate({ to: "/home", replace: true });
     } catch (e) {
       const msg = e instanceof Error ? e.message.toLowerCase() : "";
@@ -101,6 +105,7 @@ function Cover() {
                   {preview ? t("changePhoto") : t("addPhoto")}
                 </button>
                 <p className="-mt-1 text-center text-xs text-muted-foreground">{t("photoHint")}</p>
+                <p className="-mt-2 text-center text-[11px] text-muted-foreground/80">{t("aiConsent")}</p>
                 <input className="field" type="text" dir="rtl" autoComplete="name" required placeholder={t("yourName")} value={name} onChange={(e) => setName(e.target.value)} />
               </>
             )}

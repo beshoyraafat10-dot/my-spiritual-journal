@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { getJourney, requestCover, updateDisplayName, updateLanguage, uploadAvatar } from "@/lib/data";
+import { getJourney, updateDisplayName, updateLanguage, uploadAvatar } from "@/lib/data";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { useMe } from "@/lib/me";
 import { supabase } from "@/lib/supabase";
@@ -22,7 +22,7 @@ function ProfilePage() {
   const jq = useQuery({ queryKey: ["journey"], queryFn: getJourney });
   const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState<string | null>(null);
-  const [busy, setBusy] = useState<null | "photo" | "name" | "paint">(null);
+  const [busy, setBusy] = useState<null | "photo" | "name">(null);
   const [err, setErr] = useState<string | null>(null);
   const [savedName, setSavedName] = useState(false);
 
@@ -38,8 +38,6 @@ function ProfilePage() {
     setBusy("photo");
     try {
       await uploadAvatar(file);
-      // A new photo deserves a new painting, while tries remain.
-      if (me.paintsLeft > 0) await requestCover().catch((e) => console.error(e));
       await qc.invalidateQueries({ queryKey: ["profile"] });
       await qc.invalidateQueries({ queryKey: ["avatar"] });
     } catch (e) {
@@ -69,21 +67,6 @@ function ProfilePage() {
     }
   };
 
-  const repaint = async () => {
-    setErr(null);
-    setBusy("paint");
-    try {
-      const r = await requestCover();
-      if (r.error === "limit") setErr(`${t("paintsLeft")}: 0`);
-      else if (r.error) setErr(t("paintFailed"));
-      await qc.invalidateQueries({ queryKey: ["profile"] });
-    } catch {
-      setErr(t("paintFailed"));
-    } finally {
-      setBusy(null);
-    }
-  };
-
   const changeLang = (l: Lang) => { setLang(l); void updateLanguage(l); };
   const signOut = async () => {
     await qc.cancelQueries();
@@ -94,7 +77,7 @@ function ProfilePage() {
 
   return (
     <div className="space-y-5">
-      <JourneyCover name={shownName || me.name} photoUrl={me.photoUrl} coverUrl={me.coverUrl} painting={me.painting} onPickPhoto={() => fileRef.current?.click()} />
+      <JourneyCover name={shownName || me.name} photoUrl={me.photoUrl} onPickPhoto={() => fileRef.current?.click()} />
 
       <section className="parchment gold-frame relative space-y-4 rounded-[1.25rem] p-6">
         <Corners size="w-12" />
@@ -103,17 +86,6 @@ function ProfilePage() {
           {busy === "photo" ? t("uploading") : me.photoUrl ? t("changePhoto") : t("addPhoto")}
         </button>
         <p className="relative text-center text-xs text-muted-foreground">{t("photoHint")}</p>
-        {me.photoUrl && (
-          <button
-            onClick={repaint}
-            disabled={!!busy || me.painting || me.paintsLeft === 0}
-            className="relative w-full rounded-full border border-gold/70 bg-paper/80 py-2.5 text-sm font-bold text-ink disabled:opacity-50"
-          >
-            ✨ {me.painting ? t("painting") : t("repaint")} · {formatNumber(me.paintsLeft, lang)} {t("paintsLeft")}
-          </button>
-        )}
-        {me.paintFailed && <p className="relative text-center text-xs text-destructive">{t("paintFailed")}</p>}
-        <p className="relative text-center text-[11px] text-muted-foreground/80">{t("aiConsent")}</p>
 
         <label className="relative block">
           <span className="mb-1.5 block text-sm font-bold text-ink">{t("yourName")}</span>

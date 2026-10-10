@@ -2,18 +2,7 @@ import { supabase } from "./supabase";
 import { dateForDay, todayLocalISO } from "./journey";
 
 export type Journey = { id: string; user_id: string; start_date: string };
-export type Profile = {
-  user_id: string;
-  display_name: string | null;
-  avatar_url: string | null;
-  preferred_language: "ar" | "en";
-  cover_url: string | null;
-  cover_status: "pending" | "ready" | "failed" | null;
-  cover_generations: number;
-};
-
-/** Must match COVER_MAX_GENERATIONS in supabase/functions/generate-cover. */
-export const MAX_COVER_PAINTS = 3;
+export type Profile = { user_id: string; display_name: string | null; avatar_url: string | null; preferred_language: "ar" | "en" };
 export type Entry = {
   id: string;
   user_id: string;
@@ -133,23 +122,6 @@ export async function getAvatarUrl(path: string | null | undefined): Promise<str
   const { data, error } = await supabase.storage.from(AVATAR_BUCKET).createSignedUrl(path, 60 * 60 * 24);
   if (error) throw error;
   return data.signedUrl;
-}
-
-export type CoverRequest = { status?: "pending"; error?: "not_configured" | "no_photo" | "limit" | "unauthorized"; remaining?: number };
-
-/** Asks the server to paint the person walking with Jesus; it finishes in the background. */
-export async function requestCover(): Promise<CoverRequest> {
-  const { data, error } = await supabase.functions.invoke("generate-cover", { method: "POST" });
-  if (!error) return data as CoverRequest;
-  const ctx = (error as { context?: unknown }).context;
-  if (ctx instanceof Response) {
-    try {
-      return (await ctx.json()) as CoverRequest;
-    } catch {
-      /* fall through */
-    }
-  }
-  throw error;
 }
 
 export async function listEntrySummaries(): Promise<Pick<Entry, "day_number" | "is_completed">[]> {

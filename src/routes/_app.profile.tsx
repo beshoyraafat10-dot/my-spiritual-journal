@@ -77,7 +77,7 @@ function ProfilePage() {
 
   return (
     <div className="space-y-5">
-      <JourneyCover name={shownName || me.name} photoUrl={me.photoUrl} onPickPhoto={() => fileRef.current?.click()} />
+      <JourneyCover name={shownName || me.name} photoUrl={me.photoUrl} photoIsCutout={me.photoIsCutout} onPickPhoto={() => fileRef.current?.click()} />
 
       <section className="parchment gold-frame relative space-y-4 rounded-[1.25rem] p-6">
         <Corners size="w-12" />

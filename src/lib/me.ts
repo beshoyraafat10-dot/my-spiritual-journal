@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAvatarUrl, getProfile } from "./data";
+import { getAvatarUrl, getProfile, isCutout } from "./data";
 import { useAuth } from "./auth";
 
 /** The signed-in person's name and cover photo URL, shared by the cover and profile screens. */
@@ -12,5 +12,5 @@ export function useMe() {
   const rawName = profile.data?.display_name ?? meta["full_name"] ?? null;
   // Older profiles fell back to the email address; don't print that on the cover.
   const name = rawName && !rawName.includes("@") ? rawName : null;
-  return { profile, name, photoUrl: photo.data ?? null, email: session?.user.email ?? null };
+  return { profile, name, photoUrl: photo.data ?? null, photoIsCutout: isCutout(path), email: session?.user.email ?? null };
 }

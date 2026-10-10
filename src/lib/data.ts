@@ -102,18 +102,34 @@ async function shrinkImage(file: File): Promise<Blob> {
   }
 }
 
-/** Uploads the cover photo to the private bucket under the user's own folder and saves its path on the profile. */
-export async function uploadAvatar(file: File): Promise<string> {
+/** Uploads the cover photo to the private bucket under the user's own folder and saves its path on the profile.
+ * When a person is found, a background-free cut-out is stored instead so the cover can stand them beside Jesus. */
+export async function uploadAvatar(file: File, precut?: Blob | null): Promise<string> {
   const user = await uid();
-  const blob = await shrinkImage(file);
+  const cutout = precut !== undefined ? precut : await makeCutout(file);
+  const blob = cutout ?? (await shrinkImage(file));
   const type = blob.type || "image/jpeg";
-  const path = `${user.id}/avatar.${type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg"}`;
+  const path = cutout ? `${user.id}/cutout.png` : `${user.id}/avatar.${type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg"}`;
   const up = await supabase.storage.from(AVATAR_BUCKET).upload(path, blob, { upsert: true, contentType: type, cacheControl: "60" });
   if (up.error) throw up.error;
   const { error } = await supabase.from("profiles").update({ avatar_url: path }).eq("user_id", user.id);
   if (error) throw error;
   return path;
 }
+
+/** Loads the on-device segmenter only when needed; a failure just means no cut-out. */
+export async function makeCutout(file: Blob): Promise<Blob | null> {
+  try {
+    const { cutOutPerson } = await import("./cutout");
+    return await cutOutPerson(file);
+  } catch (e) {
+    console.error("cutout failed", e);
+    return null;
+  }
+}
+
+/** Cut-outs are stored as "<user id>/cutout.png"; anything else is a plain photo shown in a frame. */
+export const isCutout = (path: string | null | undefined) => !!path && path.endsWith("/cutout.png");
 
 /** avatar_url holds a storage path for uploaded photos (or a full URL for older profiles). */
 export async function getAvatarUrl(path: string | null | undefined): Promise<string | null> {

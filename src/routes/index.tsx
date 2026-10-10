@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth, signInWithEmail, signUpWithEmail } from "@/lib/auth";
-import { bootstrapUser, uploadAvatar } from "@/lib/data";
+import { bootstrapUser, makeCutout, uploadAvatar } from "@/lib/data";
 import { JourneyCover, ParchmentPage, Watermark } from "@/components/Ornate";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { LangToggle } from "@/components/Shell";
@@ -29,6 +29,9 @@ function Cover() {
   const [password, setPassword] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  // undefined = still cutting out, null = no person found
+  const [cutout, setCutout] = useState<Blob | null | undefined>(undefined);
+  const [cutoutUrl, setCutoutUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -44,6 +47,21 @@ function Cover() {
     setPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [photo]);
+
+  useEffect(() => {
+    setCutout(undefined);
+    if (!photo) return;
+    let live = true;
+    void makeCutout(photo).then((b) => live && setCutout(b));
+    return () => { live = false; };
+  }, [photo]);
+
+  useEffect(() => {
+    if (!cutout) return setCutoutUrl(null);
+    const url = URL.createObjectURL(cutout);
+    setCutoutUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [cutout]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -63,7 +81,7 @@ function Cover() {
       }
       await bootstrapUser(lang);
       // The account works without a photo, so a failed upload shouldn't block sign-up.
-      if (mode === "signup" && photo) await uploadAvatar(photo).catch((e) => console.error(e));
+      if (mode === "signup" && photo) await uploadAvatar(photo, cutout).catch((e) => console.error(e));
       navigate({ to: "/home", replace: true });
     } catch (e) {
       const msg = e instanceof Error ? e.message.toLowerCase() : "";
@@ -83,7 +101,8 @@ function Cover() {
         <div className="flex justify-end"><LangToggle /></div>
         <JourneyCover
           name={mode === "signup" ? name : null}
-          photoUrl={mode === "signup" ? preview : null}
+          photoUrl={mode === "signup" ? (cutoutUrl ?? preview) : null}
+          photoIsCutout={mode === "signup" && !!cutoutUrl}
           onPickPhoto={mode === "signup" ? () => fileRef.current?.click() : undefined}
           footer={t("coverSub")}
         />

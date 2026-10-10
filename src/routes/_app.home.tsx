@@ -57,6 +57,7 @@ function Home() {
       <JourneyCover
         name={me.name}
         photoUrl={me.photoUrl}
+        photoIsCutout={me.photoIsCutout}
         onPickPhoto={() => navigate({ to: "/profile" })}
         footer={`${t("day")} ${formatNumber(cur, lang)} ${t("of")} ${formatNumber(TOTAL_DAYS, lang)}`}
       />

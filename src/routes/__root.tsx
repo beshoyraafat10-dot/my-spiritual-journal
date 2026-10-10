@@ -61,9 +61,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cormorant+Garamond:wght@500;600;700&family=Lora:wght@400;500;600&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-      { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "icon", href: `${import.meta.env.BASE_URL}favicon.ico`, type: "image/x-icon" },
+      { rel: "manifest", href: `${import.meta.env.BASE_URL}manifest.webmanifest` },
+      { rel: "apple-touch-icon", href: `${import.meta.env.BASE_URL}apple-touch-icon.png` },
     ],
   }),
   shellComponent: RootShell,
@@ -90,7 +90,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => {
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
+      navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {});
     }
   }, []);
   return (

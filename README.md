@@ -9,8 +9,8 @@ Built with React 19 + TypeScript, TanStack Start/Router, Tailwind CSS v4, and yo
 3. **Project Settings → API**: copy the Project URL and the `anon` public key.
    Never use the `service_role` key in this app.
 4. **Authentication → URL Configuration**:
-   - Site URL: your production URL (e.g. `https://khalwety.vercel.app`)
-   - Redirect URLs: `http://localhost:8080/auth/callback`, `https://khalwety.vercel.app/auth/callback` (plus any custom domain).
+   - Site URL: your production URL (e.g. `https://beshoyraafat10-dot.github.io/my-spiritual-journal`)
+   - Redirect URLs: `http://localhost:8080/auth/callback`, `https://beshoyraafat10-dot.github.io/my-spiritual-journal/auth/callback` (plus any custom domain).
 
 ## 2. Google OAuth
 1. Google Cloud Console → **APIs & Services → OAuth consent screen** → configure (External).
@@ -35,14 +35,14 @@ git push -u origin main
 ```
 `.env` is git-ignored; only `.env.example` is committed.
 
-## 5. Vercel (free hosting)
-1. Sign in at https://vercel.com with GitHub → **Add New → Project** → import this repo. Vercel detects the settings automatically.
-2. **Environment Variables**: add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, then **Deploy**.
-3. In Supabase **Authentication → URL Configuration**, set Site URL to your Vercel URL and add `<your-vercel-url>/auth/callback` to Redirect URLs.
-4. Every push to `main` redeploys automatically.
+## 5. Hosting (GitHub Pages, free)
+Every push to `main` builds and publishes the app via `.github/workflows/pages.yml` to
+https://beshoyraafat10-dot.github.io/my-spiritual-journal/
+1. Repo **Settings → Secrets and variables → Actions**: add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+2. Supabase **Authentication → URL Configuration**: Site URL = the link above; add `https://beshoyraafat10-dot.github.io/my-spiritual-journal/auth/callback` to Redirect URLs.
 
 ## 6. Install on a phone
-The app is a PWA (installable web app). Share the Vercel link, then:
+The app is a PWA (installable web app). Share the GitHub Pages link, then:
 - **iPhone:** open in Safari → Share → **Add to Home Screen**.
 - **Android:** open in Chrome → **Install** (or ⋮ → **Add to Home screen**).
 

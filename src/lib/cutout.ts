@@ -20,7 +20,10 @@ export async function cutOutPerson(file: Blob): Promise<Blob | null> {
 
   const fileset = await FilesetResolver.forVisionTasks(WASM_BASE);
   const segmenter = await ImageSegmenter.createFromOptions(fileset, {
-    baseOptions: { modelAssetPath: MODEL_URL },
+    // A regular canvas for the GL context: Safari can't create WebGL on the
+    // OffscreenCanvas MediaPipe would make by default.
+    canvas: document.createElement("canvas"),
+    baseOptions: { modelAssetPath: MODEL_URL, delegate: "CPU" },
     runningMode: "IMAGE",
     outputConfidenceMasks: true,
     outputCategoryMask: false,

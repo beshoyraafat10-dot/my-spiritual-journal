@@ -128,6 +128,21 @@ export async function makeCutout(file: Blob): Promise<Blob | null> {
   }
 }
 
+/** Turns a photo uploaded before cut-outs existed into one, so older covers get the new look. */
+export async function upgradeToCutout(photoUrl: string): Promise<boolean> {
+  const res = await fetch(photoUrl);
+  if (!res.ok) return false;
+  const cutout = await makeCutout(await res.blob());
+  if (!cutout) return false;
+  const user = await uid();
+  const path = `${user.id}/cutout.png`;
+  const up = await supabase.storage.from(AVATAR_BUCKET).upload(path, cutout, { upsert: true, contentType: "image/png", cacheControl: "60" });
+  if (up.error) throw up.error;
+  const { error } = await supabase.from("profiles").update({ avatar_url: path }).eq("user_id", user.id);
+  if (error) throw error;
+  return true;
+}
+
 /** Cut-outs are stored as "<user id>/cutout.png"; anything else is a plain photo shown in a frame. */
 export const isCutout = (path: string | null | undefined) => !!path && path.endsWith("/cutout.png");
 

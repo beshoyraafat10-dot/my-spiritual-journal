@@ -1,0 +1,12 @@
+{
+  "appId": "io.github.beshoyraafat10.khalwety",
+  "appName": "خلوتي",
+  "webDir": "android-shell",
+  "server": {
+    "url": "https://beshoyraafat10-dot.github.io/my-spiritual-journal/",
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#f6f0e4"
+  }
+}

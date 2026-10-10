@@ -42,6 +42,7 @@ https://beshoyraafat10-dot.github.io/my-spiritual-journal/
 The app is a PWA (installable web app). Share the GitHub Pages link, then:
 - **iPhone:** open in Safari → Share → **Add to Home Screen**.
 - **Android:** open in Chrome → **Install** (or ⋮ → **Add to Home screen**).
+- **Android app file (APK):** download https://github.com/beshoyraafat10-dot/my-spiritual-journal/releases/download/android/khalwety.apk and open it to install. Built by `.github/workflows/android.yml` (Capacitor shell in `android/` that loads the live site, so web changes need no new APK).
 
 ## 365-day logic
 - Day 1 = `start_date`; Day N date = `start_date + (N-1)`.

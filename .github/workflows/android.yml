@@ -1,0 +1,40 @@
+name: Build Android app
+
+# The APK is a thin shell around the live GitHub Pages site, so it only needs
+# rebuilding when the native project or its config changes.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "android/**"
+      - "capacitor.config.json"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npx cap sync android
+      - run: ./gradlew assembleDebug
+        working-directory: android
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk khalwety.apk
+      # Publish to a fixed release so the download link never changes.
+      - run: |
+          gh release view android >/dev/null 2>&1 || gh release create android --title "Khalwety Android app" --notes "Download khalwety.apk on your Android phone and open it to install."
+          gh release upload android khalwety.apk --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}

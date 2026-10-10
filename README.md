@@ -38,7 +38,7 @@ git push -u origin main
 ## 5. Hosting (GitHub Pages, free)
 Every push to `main` builds and publishes the app via `.github/workflows/pages.yml` to
 https://beshoyraafat10-dot.github.io/my-spiritual-journal/
-1. Repo **Settings → Secrets and variables → Actions**: add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+1. Put `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env.production` (committed; the anon key is public — never the service_role key).
 2. Supabase **Authentication → URL Configuration**: Site URL = the link above; add `https://beshoyraafat10-dot.github.io/my-spiritual-journal/auth/callback` to Redirect URLs.
 
 ## 6. Install on a phone

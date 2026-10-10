@@ -1,10 +1,12 @@
-import { useLayoutEffect, useRef, type ReactNode, type TextareaHTMLAttributes } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type TextareaHTMLAttributes } from "react";
 import corner from "@/assets/ornament-corner.png";
 import cross from "@/assets/ornament-cross.png";
 import divider from "@/assets/ornament-divider.png";
 import flourish from "@/assets/ornament-flourish.png";
 import watermark from "@/assets/watermark-logo.png";
 import jesus from "@/assets/cover-jesus.jpg";
+import jesusHand from "@/assets/jesus-hand.png";
+import { HAND_ASPECT, findHandSpot, type HandSpot } from "@/lib/shoulder";
 import { useI18n } from "@/lib/i18n";
 
 /** The اجتماع الخريجين logo, faded behind every screen like the printed page. */
@@ -155,12 +157,7 @@ export function JourneyCover({
         />
       </div>
       {photoIsCutout && photoUrl ? (
-        /* The person stands on the path beside Jesus, warmed to the same golden light */
-        <img
-          src={photoUrl}
-          alt={walker}
-          className="absolute bottom-[7%] -left-[3%] h-[54%] w-[46%] object-contain object-bottom drop-shadow-[0_10px_18px_rgba(70,40,10,0.45)] [filter:sepia(0.12)_saturate(1.05)_brightness(1.03)] [-webkit-mask-image:linear-gradient(to_top,transparent,black_14%)] [mask-image:linear-gradient(to_top,transparent,black_14%)]"
-        />
+        <StandingPerson url={photoUrl} walker={walker} />
       ) : (
         <>
           {/* The person's photo in an arched gold frame */}
@@ -228,6 +225,62 @@ export function JourneyCover({
         className="pointer-events-none absolute inset-2 rounded-[1.1rem] border-2 border-[#d9b25a]/90 shadow-[inset_0_0_0_3px_rgba(255,240,200,0.35)]"
       />
       <Corners size="w-14" />
+    </div>
+  );
+}
+
+// Card is 3:4.2, so its height is 1.4× its width.
+const CARD_H_PER_W = 4.2 / 3;
+
+/**
+ * The person stands on the path beside Jesus, warmed to the same golden light,
+ * with His hand resting on their far shoulder as on the printed cover.
+ */
+function StandingPerson({ url, walker }: { url: string; walker: string }) {
+  const [ratio, setRatio] = useState<number | null>(null);
+  const [spot, setSpot] = useState<HandSpot | null>(null);
+  useEffect(() => {
+    let live = true;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (!live) return;
+      setRatio(img.naturalWidth / img.naturalHeight);
+      try {
+        setSpot(findHandSpot(img));
+      } catch {
+        setSpot(null);
+      }
+    };
+    img.src = url;
+    return () => {
+      live = false;
+    };
+  }, [url]);
+  if (!ratio) return null;
+  // Nearly as tall as Jesus (57% of the card), but never wider than 44% so His face stays visible.
+  const heightPct = Math.min(57, 44 / (CARD_H_PER_W * ratio));
+  return (
+    <div className="absolute bottom-[6%] left-[1%]" style={{ height: `${heightPct}%`, aspectRatio: String(ratio) }}>
+      <img
+        src={url}
+        alt={walker}
+        className="h-full w-full drop-shadow-[0_10px_18px_rgba(70,40,10,0.45)] [filter:sepia(0.12)_saturate(1.05)_brightness(1.03)] [-webkit-mask-image:linear-gradient(to_top,transparent,black_14%)] [mask-image:linear-gradient(to_top,transparent,black_14%)]"
+      />
+      {spot && (
+        <img
+          src={jesusHand}
+          alt=""
+          aria-hidden
+          className="absolute drop-shadow-[0_2px_2px_rgba(60,35,10,0.35)]"
+          style={{
+            left: `${spot.left * 100}%`,
+            top: `${spot.top * 100}%`,
+            width: `${spot.width * 100}%`,
+            height: `${((spot.width * HAND_ASPECT) / (1 / spot.ratio)) * 100}%`,
+          }}
+        />
+      )}
     </div>
   );
 }

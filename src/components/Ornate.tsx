@@ -102,7 +102,8 @@ export function JourneyCover({
 }) {
   const { t, lang } = useI18n();
   const walker = name?.trim() || t("defaultWalker");
-  const verse = lang === "ar" ? `وَسَارَ ${walker} مَعَ اللهِ` : `And ${walker} walked with God`;
+  const special = <span className="name-special text-[1.3em]">{walker}</span>;
+  const verse = lang === "ar" ? <>وَسَارَ {special} مَعَ اللهِ</> : <>And {special} walked with God</>;
   return (
     <div dir="ltr" className="relative aspect-[3/4.2] w-full overflow-hidden rounded-[1.4rem] bg-[#e9c88c] shadow-[var(--shadow-cover)]">
       {/* Soft golden backdrop drawn from the same scene */}
@@ -151,7 +152,7 @@ export function JourneyCover({
       <div className="absolute inset-x-[8%] bottom-[4.5%]">
         <div className="rounded-xl bg-gradient-to-b from-[#f4d98f] via-[#b8862b] to-[#f4d98f] p-[3px] shadow-lg">
           <div dir={lang === "ar" ? "rtl" : "ltr"} className="parchment rounded-[0.6rem] px-4 py-2 text-center font-display text-lg font-bold text-ink">
-            {footer ?? walker}
+            {footer ?? <span className="name-special text-xl">{walker}</span>}
           </div>
         </div>
       </div>

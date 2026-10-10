@@ -9,8 +9,8 @@ Built with React 19 + TypeScript, TanStack Start/Router, Tailwind CSS v4, and yo
 3. **Project Settings → API**: copy the Project URL and the `anon` public key.
    Never use the `service_role` key in this app.
 4. **Authentication → URL Configuration**:
-   - Site URL: your production URL (e.g. `https://khalwety.pages.dev`)
-   - Redirect URLs: `http://localhost:8080/auth/callback`, `https://khalwety.pages.dev/auth/callback` (plus any custom domain).
+   - Site URL: your production URL (e.g. `https://khalwety.vercel.app`)
+   - Redirect URLs: `http://localhost:8080/auth/callback`, `https://khalwety.vercel.app/auth/callback` (plus any custom domain).
 
 ## 2. Google OAuth
 1. Google Cloud Console → **APIs & Services → OAuth consent screen** → configure (External).
@@ -23,8 +23,8 @@ Both "Sign up with Google" and "Sign in with Google" use Supabase Google OAuth. 
 ## 3. Local development
 ```bash
 cp .env.example .env   # fill VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
-bun install            # or npm install
-bun run dev
+npm install
+npm run dev
 ```
 
 ## 4. GitHub
@@ -35,12 +35,16 @@ git push -u origin main
 ```
 `.env` is git-ignored; only `.env.example` is committed.
 
-## 5. Cloudflare Pages
-1. Cloudflare Dashboard → **Workers & Pages → Create → Pages → Connect to Git** and select the repo.
-2. Build command: `npm run build` · Output directory: `dist/client` (static assets). SPA fallback is provided by `public/_redirects` (`/* /index.html 200`).
-   - Alternatively deploy the full SSR build as a Cloudflare Worker with `npx wrangler deploy` (the project targets Workers natively).
-3. **Environment variables** (Production + Preview): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
-4. Add the Pages URL `/auth/callback` to Supabase Redirect URLs.
+## 5. Vercel (free hosting)
+1. Sign in at https://vercel.com with GitHub → **Add New → Project** → import this repo. Vercel detects the settings automatically.
+2. **Environment Variables**: add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, then **Deploy**.
+3. In Supabase **Authentication → URL Configuration**, set Site URL to your Vercel URL and add `<your-vercel-url>/auth/callback` to Redirect URLs.
+4. Every push to `main` redeploys automatically.
+
+## 6. Install on a phone
+The app is a PWA (installable web app). Share the Vercel link, then:
+- **iPhone:** open in Safari → Share → **Add to Home Screen**.
+- **Android:** open in Chrome → **Install** (or ⋮ → **Add to Home screen**).
 
 ## 365-day logic
 - Day 1 = `start_date`; Day N date = `start_date + (N-1)`.
